@@ -258,7 +258,7 @@ export default function Home() {
             onClick={() => setTimeRange('month')}
             className={`px-4 py-2 rounded ${
               timeRange === 'month' 
-                ? 'bg-purple-600 text-white' 
+                ? 'bg-blue-500 text-white' 
                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
             }`}
           >
@@ -268,7 +268,7 @@ export default function Home() {
             onClick={() => setTimeRange('year')}
             className={`px-4 py-2 rounded ${
               timeRange === 'year' 
-                ? 'bg-purple-600 text-white' 
+                ? 'bg-blue-500 text-white' 
                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
             }`}
           >
@@ -278,7 +278,7 @@ export default function Home() {
             onClick={() => setTimeRange('all')}
             className={`px-4 py-2 rounded ${
               timeRange === 'all' 
-                ? 'bg-purple-600 text-white' 
+                ? 'bg-blue-500 text-white' 
                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
             }`}
           >
@@ -286,157 +286,163 @@ export default function Home() {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-          {/* Books and Pages Over Time */}
-          <div className="p-4 flex items-center justify-center">
-            <div className="w-full" >
-              <Line
-                data={monthlyData}
-                options={{
-                  responsive: true,
-                  interaction: {
-                    mode: 'index' as const,
-                    intersect: false,
-                  },
-                  plugins: {
-                    title: {
-                      display: true,
-                      text: 'Monthly Reading Progress'
+        {filteredBooks.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-xl text-gray-600">No books recorded for this period</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+            {/* Books and Pages Over Time */}
+            <div className="p-4 flex items-center justify-center">
+              <div className="w-full" >
+                <Line
+                  data={monthlyData}
+                  options={{
+                    responsive: true,
+                    interaction: {
+                      mode: 'index' as const,
+                      intersect: false,
                     },
-                    legend: {
-                      position: 'bottom' as const
-                    }
-                  },
-                  scales: {
-                    y: {
-                      type: 'linear' as const,
-                      display: true,
-                      position: 'left' as const,
+                    plugins: {
                       title: {
                         display: true,
-                        text: 'Books Read'
+                        text: 'Monthly Reading Progress'
+                      },
+                      legend: {
+                        position: 'bottom' as const
                       }
                     },
-                    y1: {
-                      type: 'linear' as const,
-                      display: true,
-                      position: 'right' as const,
+                    scales: {
+                      y: {
+                        type: 'linear' as const,
+                        display: true,
+                        position: 'left' as const,
+                        title: {
+                          display: true,
+                          text: 'Books Read'
+                        }
+                      },
+                      y1: {
+                        type: 'linear' as const,
+                        display: true,
+                        position: 'right' as const,
+                        title: {
+                          display: true,
+                          text: 'Pages Read'
+                        },
+                        grid: {
+                          drawOnChartArea: false,
+                        },
+                      },
+                    },
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Genres Chart */}
+            <div className="bg-white rounded-lg shadow-lg p-4 flex items-center justify-center">
+              <div className="w-full max-w-sm">
+                <Pie
+                  data={genreData}
+                  options={{
+                    plugins: {
                       title: {
                         display: true,
-                        text: 'Pages Read'
+                        text: 'Genre Distribution'
                       },
-                      grid: {
-                        drawOnChartArea: false,
-                      },
+                      legend: {
+                        position: 'bottom' as const
+                      }
                     },
-                  },
-                }}
-              />
+                    radius: '70%' // Decreased from default
+                  }}
+                />
+              </div>
             </div>
-          </div>
 
-          {/* Genres Chart */}
-          <div className="bg-white rounded-lg shadow-lg p-4 flex items-center justify-center">
-            <div className="w-full max-w-sm">
-              <Pie
-                data={genreData}
-                options={{
+            {/* Pace Distribution */}
+            <div className="bg-white rounded-lg shadow-lg p-4 flex items-center justify-center">
+              <div className="w-full max-w-sm">
+                <Pie
+                  data={paceData}
+                  options={{
+                    plugins: {
+                      title: {
+                        display: true,
+                        text: 'Pace'
+                      },
+                      legend: {
+                        position: 'bottom' as const
+                      }
+                    },
+                    radius: '70%' // Decreased from default
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Most Read Authors */}
+            <div className="p-4 flex items-center justify-center">
+              <div className="w-full" style={{ height: '250px' }}>
+                <Bar data={authorData} options={{
+                  indexAxis: 'y',
                   plugins: {
                     title: {
                       display: true,
-                      text: 'Genre Distribution'
+                      text: 'Most Read Authors'
                     },
                     legend: {
-                      position: 'bottom' as const
+                      display: false
                     }
-                  },
-                  radius: '70%' // Decreased from default
-                }}
-              />
-            </div>
-          </div>
-
-          {/* Pace Distribution */}
-          <div className="bg-white rounded-lg shadow-lg p-4 flex items-center justify-center">
-            <div className="w-full max-w-sm">
-              <Pie
-                data={paceData}
-                options={{
-                  plugins: {
-                    title: {
-                      display: true,
-                      text: 'Pace'
-                    },
-                    legend: {
-                      position: 'bottom' as const
-                    }
-                  },
-                  radius: '70%' // Decreased from default
-                }}
-              />
-            </div>
-          </div>
-
-          {/* Most Read Authors */}
-          <div className="p-4 flex items-center justify-center">
-            <div className="w-full" style={{ height: '250px' }}>
-              <Bar data={authorData} options={{
-                indexAxis: 'y',
-                plugins: {
-                  title: {
-                    display: true,
-                    text: 'Most Read Authors'
-                  },
-                  legend: {
-                    display: false
                   }
-                }
-              }} />
+                }} />
+              </div>
             </div>
-          </div>
 
-          {/* Page Count Distribution */}
-          <div className="p-4 flex items-center justify-center">
-            <div className="w-full max-w-sm">
-              <Pie
-                data={pageCountData}
-                options={{
-                  plugins: {
-                    title: {
-                      display: true,
-                      text: 'Page Numbers'
+            {/* Page Count Distribution */}
+            <div className="p-4 flex items-center justify-center">
+              <div className="w-full max-w-sm">
+                <Pie
+                  data={pageCountData}
+                  options={{
+                    plugins: {
+                      title: {
+                        display: true,
+                        text: 'Page Numbers'
+                      },
+                      legend: {
+                        position: 'bottom' as const
+                      }
                     },
-                    legend: {
-                      position: 'bottom' as const
-                    }
-                  },
-                  radius: '70%' // Decreased from default
-                }}
-              />
+                    radius: '70%' // Decreased from default
+                  }}
+                />
+              </div>
             </div>
-          </div>
 
-          {/* Fiction/Non-fiction Split */}
-          <div className="bg-white rounded-lg shadow-lg p-4 flex items-center justify-center">
-            <div className="w-full max-w-sm">
-              <Pie
-                data={fictionData}
-                options={{
-                  plugins: {
-                    title: {
-                      display: true,
-                      text: 'Fiction vs Non-fiction'
+            {/* Fiction/Non-fiction Split */}
+            <div className="bg-white rounded-lg shadow-lg p-4 flex items-center justify-center">
+              <div className="w-full max-w-sm">
+                <Pie
+                  data={fictionData}
+                  options={{
+                    plugins: {
+                      title: {
+                        display: true,
+                        text: 'Fiction vs Non-fiction'
+                      },
+                      legend: {
+                        position: 'bottom' as const
+                      }
                     },
-                    legend: {
-                      position: 'bottom' as const
-                    }
-                  },
-                  radius: '70%' // Decreased from default
-                }}
-              />
+                    radius: '70%' // Decreased from default
+                  }}
+                />
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </main>
   );
