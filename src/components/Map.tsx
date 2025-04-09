@@ -59,7 +59,7 @@ const getIconForType = (type: string) => {
   }
 };
 
-const createCustomMarkerElement = (place: Place) => {
+const createCustomMarkerElement = (place: Place, mapInstance: mapboxgl.Map) => {
   const markerElement = document.createElement('div');
   markerElement.style.cursor = 'pointer';
   
@@ -78,13 +78,35 @@ const createCustomMarkerElement = (place: Place) => {
   markerElement.appendChild(root);
   markerElement.title = `${place.name} (${place.type})`;
   
-  return markerElement;
+  // Create popup
+  const popup = new mapboxgl.Popup({
+    closeButton: false,
+    closeOnClick: true,
+    offset: [0, -8]
+  }).setHTML(`
+    <div style="padding: 8px;">
+      <h3 style="margin: 0 0 4px; font-size: 14px; font-weight: 600;">${place.name}</h3>
+      <p style="margin: 0; font-size: 12px; color: #666;">${place.type}</p>
+      ${place.address ? `<p style="margin: 4px 0 0; font-size: 12px; color: #666;">${place.address}</p>` : ''}
+    </div>
+  `);
+
+  // Show popup on hover
+  markerElement.addEventListener('mouseenter', () => {
+    popup.addTo(mapInstance);
+  });
+
+  markerElement.addEventListener('mouseleave', () => {
+    popup.remove();
+  });
+  
+  return { element: markerElement, popup };
 };
 
 const Map = ({ places, onMapReady }: MapProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
-  const markers = useRef<mapboxgl.Marker[]>([]);
+  const markers = useRef<{ marker: mapboxgl.Marker; popup: mapboxgl.Popup }[]>([]);
   const userLocationMarker = useRef<mapboxgl.Marker | null>(null);
   const [showUserLocation, setShowUserLocation] = useState(false);
 
@@ -187,20 +209,21 @@ const Map = ({ places, onMapReady }: MapProps) => {
   }, [showUserLocation, handleUserLocation]);
 
   useEffect(() => {
-    if (!map.current) return;
+    if (!map.current || !places) return;
 
     // Clear existing markers
-    markers.current.forEach(marker => marker.remove());
+    markers.current.forEach(({ marker }) => marker.remove());
     markers.current = [];
 
     // Add new markers
-    places.forEach(place => {
-      const markerElement = createCustomMarkerElement(place);
-      const marker = new mapboxgl.Marker({ element: markerElement })
+    places.forEach((place) => {
+      const { element, popup } = createCustomMarkerElement(place, map.current!);
+      const marker = new mapboxgl.Marker({ element: element })
         .setLngLat([place.lng, place.lat])
+        .setPopup(popup)
         .addTo(map.current!);
       
-      markers.current.push(marker);
+      markers.current.push({ marker, popup });
     });
   }, [places]);
 
