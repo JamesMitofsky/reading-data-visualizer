@@ -36,7 +36,7 @@ const Map = ({ places }: MapProps) => {
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/dark-v11',
       center: [-0.3707, 49.1829], // Caen coordinates [lng, lat]
-      zoom: 12
+      zoom: 1
     });
 
     // Add navigation controls
