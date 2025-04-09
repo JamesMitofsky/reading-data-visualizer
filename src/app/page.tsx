@@ -28,6 +28,12 @@ ChartJS.register(
   PointElement
 );
 
+interface MonthlyStats {
+  books: { [key: string]: number };
+  pages: { [key: string]: number };
+  yearMonths: { [key: string]: string };
+}
+
 export default function Home() {
   const [readingData, setReadingData] = useState<ReadingData[]>([]);
 
@@ -46,15 +52,33 @@ export default function Home() {
 
   // Calculate genre distribution
   const genreCounts = completedBooks.reduce((acc: { [key: string]: number }, book) => {
-    const genre = book.genre || 'Uncategorized';
-    acc[genre] = (acc[genre] || 0) + 1;
+    if (!book.genre) return acc;
+    
+    // Split genres and trim whitespace
+    const genres = book.genre.split(',').map(g => g.trim());
+    
+    // Count each genre separately
+    genres.forEach(genre => {
+      if (genre) {
+        acc[genre] = (acc[genre] || 0) + 1;
+      }
+    });
+    
     return acc;
   }, {});
 
+  // Sort genres by count
+  const sortedGenres = Object.entries(genreCounts)
+    .sort(([,a], [,b]) => b - a)
+    .reduce((obj: { [key: string]: number }, [key, value]) => {
+      obj[key] = value;
+      return obj;
+    }, {});
+
   const genreData = {
-    labels: Object.keys(genreCounts),
+    labels: Object.keys(sortedGenres),
     datasets: [{
-      data: Object.values(genreCounts),
+      data: Object.values(sortedGenres),
       backgroundColor: [
         '#6b46c1', '#0ea5e9', '#10b981', '#ec4899', 
         '#f97316', '#ef4444', '#84cc16', '#06b6d4'
@@ -63,9 +87,10 @@ export default function Home() {
     }]
   };
 
-  // Calculate fiction vs non-fiction
-  const fictionCount = completedBooks.filter(book => book.genre === 'Fiction').length;
-  const nonFictionCount = completedBooks.filter(book => book.genre === 'Non-Fiction').length;
+  // Calculate fiction vs non-fiction using isFiction field
+  const fictionCount = completedBooks.filter(book => book.isFiction === true).length;
+  // Count both explicit false and null (unspecified) as non-fiction
+  const nonFictionCount = completedBooks.filter(book => book.isFiction === false || book.isFiction === null).length;
 
   const fictionData = {
     labels: ['Fiction', 'Non-fiction'],
@@ -148,21 +173,27 @@ export default function Home() {
   };
 
   // Calculate books and pages by month
-  const monthlyStats = completedBooks.reduce((acc: { 
-    books: { [key: string]: number }, 
-    pages: { [key: string]: number } 
-  }, book) => {
+  const monthlyStats = completedBooks.reduce<MonthlyStats>((acc, book) => {
     if (book.dateFinished) {
       const date = new Date(book.dateFinished);
       const monthKey = date.toLocaleString('default', { month: 'short' });
+      const yearMonth = `${date.getFullYear()}-${date.getMonth()}`;
       
+      acc.yearMonths[monthKey] = yearMonth;
       acc.books[monthKey] = (acc.books[monthKey] || 0) + 1;
       acc.pages[monthKey] = (acc.pages[monthKey] || 0) + (book.pageCount || 0);
     }
     return acc;
-  }, { books: {}, pages: {} });
+  }, { books: {}, pages: {}, yearMonths: {} });
 
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  // Get current date and calculate last 12 months
+  const currentDate = new Date('2025-04-09'); // Using the provided current time
+  const months: string[] = [];
+  for (let i = 11; i >= 0; i--) {
+    const date = new Date(currentDate);
+    date.setMonth(currentDate.getMonth() - i);
+    months.push(date.toLocaleString('default', { month: 'short' }));
+  }
   
   const monthlyData = {
     labels: months,
@@ -195,94 +226,168 @@ export default function Home() {
   }, 0) / (completedBooks.length || 1);
 
   const averageMonths = Math.round(averageTimeToFinish / (1000 * 60 * 60 * 24 * 30));
+  const monthText = averageMonths === 1 ? 'month' : 'months';
 
   return (
     <div className="min-h-screen p-8 bg-white">
       <main className="max-w-6xl mx-auto space-y-12">
         <div className="text-center">
-          <h1 className="text-3xl font-bold mb-2">Read</h1>
+          <h1 className="text-3xl font-bold mb-2">Books that James has Read</h1>
           <p className="text-xl">{totalBooks} books, {totalPages} pages</p>
-          <p className="text-gray-600 mt-2">Average time to finish: {averageMonths} months</p>
+          <p className="text-gray-600 mt-2">Average time to finish: {averageMonths} {monthText}</p>
         </div>
+
+          {/* Books and Pages Over Time */}
+          <div className="md:col-span-2 bg-white rounded-lg shadow-lg p-6 flex items-center justify-center">
+            <div className="w-full">
+              <Line
+                data={monthlyData}
+                options={{
+                  responsive: true,
+                  interaction: {
+                    mode: 'index' as const,
+                    intersect: false,
+                  },
+                  plugins: {
+                    title: {
+                      display: true,
+                      text: 'Monthly Reading Progress'
+                    },
+                    legend: {
+                      position: 'bottom' as const
+                    }
+                  },
+                  scales: {
+                    y: {
+                      type: 'linear' as const,
+                      display: true,
+                      position: 'left' as const,
+                      title: {
+                        display: true,
+                        text: 'Books Read'
+                      }
+                    },
+                    y1: {
+                      type: 'linear' as const,
+                      display: true,
+                      position: 'right' as const,
+                      title: {
+                        display: true,
+                        text: 'Pages Read'
+                      },
+                      grid: {
+                        drawOnChartArea: false,
+                      },
+                    },
+                  },
+                }}
+              />
+            </div>
+          </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Genres Chart */}
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h2 className="text-xl font-semibold mb-4">Genres</h2>
-            <Bar data={genreData} options={{ 
-              indexAxis: 'y',
-              plugins: {
-                legend: {
-                  display: false
-                }
-              },
-              scales: {
-                x: {
-                  beginAtZero: true,
-                  title: {
-                    display: true,
-                    text: 'Number of Books'
-                  }
-                }
-              }
-            }} />
+          <div className="bg-white rounded-lg shadow-lg p-6 flex items-center justify-center">
+            <div className="w-full max-w-md">
+              <Pie 
+                data={genreData} 
+                options={{
+                  plugins: {
+                    title: {
+                      display: true,
+                      text: 'Genre Distribution'
+                    },
+                    legend: {
+                      position: 'bottom' as const
+                    }
+                  },
+                  radius: '70%' // Decreased from default
+                }}
+              />
+            </div>
           </div>
 
           {/* Pace Distribution */}
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h2 className="text-xl font-semibold mb-4">Pace</h2>
-            <Pie data={paceData} />
+          <div className="bg-white rounded-lg shadow-lg p-6 flex items-center justify-center">
+            <div className="w-full max-w-md">
+              <Pie 
+                data={paceData}
+                options={{
+                  plugins: {
+                    title: {
+                      display: true,
+                      text: 'Pace'
+                    },
+                    legend: {
+                      position: 'bottom' as const
+                    }
+                  },
+                  radius: '70%' // Decreased from default
+                }}
+              />
+            </div>
           </div>
 
           {/* Page Count Distribution */}
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h2 className="text-xl font-semibold mb-4">Page Numbers</h2>
-            <Pie data={pageCountData} />
+          <div className="bg-white rounded-lg shadow-lg p-6 flex items-center justify-center">
+            <div className="w-full max-w-md">
+              <Pie 
+                data={pageCountData}
+                options={{
+                  plugins: {
+                    title: {
+                      display: true,
+                      text: 'Page Numbers'
+                    },
+                    legend: {
+                      position: 'bottom' as const
+                    }
+                  },
+                  radius: '70%' // Decreased from default
+                }}
+              />
+            </div>
           </div>
 
           {/* Fiction/Non-fiction Split */}
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h2 className="text-xl font-semibold mb-4">Fiction/Nonfiction</h2>
-            <Pie data={fictionData} />
+          <div className="bg-white rounded-lg shadow-lg p-6 flex items-center justify-center">
+            <div className="w-full max-w-md">
+              <Pie 
+                data={fictionData}
+                options={{
+                  plugins: {
+                    title: {
+                      display: true,
+                      text: 'Fiction vs Non-fiction'
+                    },
+                    legend: {
+                      position: 'bottom' as const
+                    }
+                  },
+                  radius: '70%' // Decreased from default
+                }}
+              />
+            </div>
           </div>
 
           {/* Most Read Authors */}
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h2 className="text-xl font-semibold mb-4">Most Read Authors</h2>
-            <Bar data={authorData} options={{ 
-              indexAxis: 'y',
-              plugins: {
-                legend: {
-                  display: false
+          <div className="bg-white rounded-lg shadow-lg p-6 flex items-center justify-center">
+            <div className="w-full">
+              <Bar data={authorData} options={{ 
+                indexAxis: 'y',
+                plugins: {
+                  title: {
+                    display: true,
+                    text: 'Most Read Authors'
+                  },
+                  legend: {
+                    display: false
+                  }
                 }
-              }
-            }} />
+              }} />
+            </div>
           </div>
 
-          {/* Books and Pages Over Time */}
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h2 className="text-xl font-semibold mb-4">Number of books and pages</h2>
-            <Line 
-              data={monthlyData} 
-              options={{
-                scales: {
-                  y: {
-                    type: 'linear',
-                    display: true,
-                    position: 'left',
-                  },
-                  y1: {
-                    type: 'linear',
-                    display: true,
-                    position: 'right',
-                    grid: {
-                      drawOnChartArea: false,
-                    },
-                  },
-                },
-              }}
-            />
-          </div>
         </div>
       </main>
     </div>

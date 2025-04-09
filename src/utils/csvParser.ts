@@ -6,6 +6,7 @@ export interface ReadingData {
   dateFinished: string;
   status: string;
   author: string;
+  isFiction: boolean | null;
   genre: string;
   pageCount: number;
   notes?: string;
@@ -18,6 +19,7 @@ interface CSVRow {
   'Date Finished': string;
   'Status': string;
   'Author (AI managed)': string;
+  'isFiction': string;
   'Genre (AI managed)': string;
   'Page Count (AI managed)': string;
   'Notes': string;
@@ -31,12 +33,6 @@ export const parseCSV = async (): Promise<ReadingData[]> => {
   return new Promise((resolve, reject) => {
     parse(csvText, {
       header: true,
-      transform: (value, field) => {
-        if (field === 'Page Count (AI managed)') {
-          return value ? parseInt(value, 10) : 0;
-        }
-        return value;
-      },
       complete: (results: { data: CSVRow[] }) => {
         const data = results.data.map(row => ({
           title: row['Book Title'],
@@ -44,6 +40,8 @@ export const parseCSV = async (): Promise<ReadingData[]> => {
           dateFinished: row['Date Finished'],
           status: row['Status'],
           author: row['Author (AI managed)'],
+          // Parse isFiction as boolean or null if blank
+          isFiction: row['isFiction'] === '' ? null : row['isFiction'] === 'TRUE',
           genre: row['Genre (AI managed)'],
           pageCount: row['Page Count (AI managed)'] ? parseInt(row['Page Count (AI managed)'], 10) : 0,
           notes: row['Notes'],
