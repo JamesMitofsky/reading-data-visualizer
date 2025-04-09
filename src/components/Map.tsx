@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
@@ -20,6 +20,7 @@ interface Place {
 
 interface MapProps {
   places: Place[];
+  onMapReady?: (flyToFn: (lat: number, lng: number) => void) => void;
 }
 
 const getIconForType = (type: string) => {
@@ -80,18 +81,18 @@ const createCustomMarkerElement = (place: Place) => {
   return markerElement;
 };
 
-const Map = ({ places }: MapProps) => {
+const Map = ({ places, onMapReady }: MapProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markers = useRef<mapboxgl.Marker[]>([]);
 
-  const flyToLocation = (lng: number, lat: number, zoom: number) => {
+  const flyToLocation = useCallback((lat: number, lng: number) => {
     map.current?.flyTo({
       center: [lng, lat],
-      zoom,
+      zoom: 15,
       essential: true
     });
-  };
+  }, []);
 
   useEffect(() => {
     if (!mapContainer.current) return;
@@ -99,96 +100,55 @@ const Map = ({ places }: MapProps) => {
     // Initialize map
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/streets-v12',
-      center: [10, 50], // Centered on Europe
-      zoom: 1
+      style: 'mapbox://styles/mapbox/light-v11',
+      center: [places[0]?.lng || -0.37, places[0]?.lat || 49.18],
+      zoom: places[0] ? 12 : 2
     });
 
-    // Add navigation controls
-    map.current.addControl(new mapboxgl.NavigationControl());
+    // Notify parent component that map is ready and pass the flyTo function
+    onMapReady?.(flyToLocation);
 
-    // Clean up markers
+    // Cleanup function
     return () => {
-      markers.current.forEach(marker => marker.remove());
       map.current?.remove();
     };
-  }, []);
+  }, [places, onMapReady, flyToLocation]);
 
   useEffect(() => {
-    if (!map.current || !places.length) return;
+    if (!map.current) return;
 
-    // Remove existing markers
+    // Clear existing markers
     markers.current.forEach(marker => marker.remove());
     markers.current = [];
 
     // Add new markers
     places.forEach(place => {
       const markerElement = createCustomMarkerElement(place);
-      
-      const marker = new mapboxgl.Marker({
-        element: markerElement
-      })
+      const marker = new mapboxgl.Marker({ element: markerElement })
         .setLngLat([place.lng, place.lat])
-        .setPopup(
-          new mapboxgl.Popup({ offset: 25 })
-            .setHTML(`
-              <h3>${place.name}</h3>
-              <p>${place.type}</p>
-              <p>${place.address}</p>
-            `)
-        )
         .addTo(map.current!);
-
+      
       markers.current.push(marker);
-    });
-
-    // Fit map to show all markers
-    const bounds = new mapboxgl.LngLatBounds();
-    places.forEach(place => {
-      bounds.extend([place.lng, place.lat]);
-    });
-    
-    map.current.fitBounds(bounds, {
-      padding: 50,
-      maxZoom: 15
     });
   }, [places]);
 
   return (
     <div>
-      <div style={{ marginBottom: '1rem', display: 'flex', gap: '0.5rem' }}>
+      <div className="flex gap-2 mb-4">
         <button 
-          onClick={() => flyToLocation(-0.358, 49.18, 14)} 
-          style={{ 
-            padding: '0.5rem 1rem',
-            borderRadius: '4px',
-            border: '1px solid #ccc',
-            cursor: 'pointer'
-          }}
+          onClick={() => flyToLocation(49.18, -0.358)}
+          className="px-4 py-2 bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
         >
           Go to Caen, France
         </button>
         <button 
-          onClick={() => flyToLocation(7.0999, 50.7333, 14)} 
-          style={{ 
-            padding: '0.5rem 1rem',
-            borderRadius: '4px',
-            border: '1px solid #ccc',
-            cursor: 'pointer'
-          }}
+          onClick={() => flyToLocation(50.7333, 7.0999)}
+          className="px-4 py-2 bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
         >
           Go to Bonn, Germany
         </button>
       </div>
-      <div 
-        ref={mapContainer} 
-        style={{ 
-          width: '100%', 
-          height: '70vh',
-          borderRadius: '8px',
-          overflow: 'hidden'
-        }} 
-      />
+      <div ref={mapContainer} style={{ width: '100%', height: '500px', borderRadius: '0.5rem' }} />
     </div>
   );
 };
