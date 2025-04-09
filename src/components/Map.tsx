@@ -16,7 +16,6 @@ interface Place {
   lng: number;
   address: string;
   type: string;
-  rating?: number;
 }
 
 interface MapProps {
@@ -35,7 +34,7 @@ const Map = ({ places }: MapProps) => {
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/dark-v11',
-      center: [-0.3707, 49.1829], // Caen coordinates [lng, lat]
+      center: [10, 50], // Centered on Europe
       zoom: 1
     });
 
@@ -62,7 +61,6 @@ const Map = ({ places }: MapProps) => {
       const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
         <div style="padding: 8px;">
           <h3 style="margin: 0 0 8px 0; font-weight: bold;">${place.name}</h3>
-          ${place.rating ? `<p style="margin: 4px 0;">Rating: ${place.rating}/10</p>` : ''}
           <p style="margin: 4px 0;">Type: ${place.type}</p>
           <p style="margin: 4px 0;">${place.address}</p>
         </div>
@@ -87,7 +85,7 @@ const Map = ({ places }: MapProps) => {
       });
       map.current.fitBounds(bounds, {
         padding: 50,
-        maxZoom: 15
+        maxZoom: 6 // Lower max zoom to keep the view more zoomed out
       });
     }
   }, [places]);

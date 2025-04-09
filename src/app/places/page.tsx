@@ -25,11 +25,6 @@ export default function Places() {
         {placesData.map((place, index) => (
           <div key={index} className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-xl font-semibold mb-2">{place.name}</h2>
-            {place.rating && (
-              <div className="mb-2">
-                <span className="font-medium">Rating:</span> {place.rating}/10
-              </div>
-            )}
             <div className="mb-2">
               <span className="font-medium">Type:</span> {place.type}
             </div>

@@ -2,9 +2,7 @@ import { parse } from 'papaparse';
 
 export interface PlaceData {
   name: string;
-  rating?: number;
   type: string;
-  city: string;
   address: string;
   notes?: string;
   lat: number;
@@ -13,9 +11,7 @@ export interface PlaceData {
 
 interface CSVRow {
   'Name': string;
-  'Rating': string;
   'Type': string;
-  'City': string;
   'Address': string;
   'Notes': string;
   'Latitude': string;
@@ -32,9 +28,7 @@ export const parsePlacesCSV = async (): Promise<PlaceData[]> => {
       complete: (results: { data: CSVRow[] }) => {
         const data = results.data.map(row => ({
           name: row['Name'],
-          rating: row['Rating'] ? parseInt(row['Rating'], 10) : undefined,
           type: row['Type'],
-          city: row['City'],
           address: row['Address'],
           notes: row['Notes'],
           lat: parseFloat(row['Latitude'] || '49.1829'), // Default to Caen's coordinates
