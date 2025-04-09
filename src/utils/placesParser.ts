@@ -7,6 +7,8 @@ export interface PlaceData {
   city: string;
   address: string;
   notes?: string;
+  lat: number;
+  lng: number;
 }
 
 interface CSVRow {
@@ -16,6 +18,8 @@ interface CSVRow {
   'City': string;
   'Address': string;
   'Notes': string;
+  'Latitude': string;
+  'Longitude': string;
 }
 
 export const parsePlacesCSV = async (): Promise<PlaceData[]> => {
@@ -32,7 +36,9 @@ export const parsePlacesCSV = async (): Promise<PlaceData[]> => {
           type: row['Type'],
           city: row['City'],
           address: row['Address'],
-          notes: row['Notes']
+          notes: row['Notes'],
+          lat: parseFloat(row['Latitude'] || '49.1829'), // Default to Caen's coordinates
+          lng: parseFloat(row['Longitude'] || '-0.3707')
         }));
         resolve(data.filter(place => place.name && place.address));
       },

@@ -1,21 +1,21 @@
-Name,Rating,Type,City,Address
-Tartines et Gourmandises,,Bakery,Caen,"20 Rue Froide, 14000 Caen"
-Jardin Des Plantes,10,"Café, Green space",Caen,"Place Blot, 14000 Caen"
-Gaston,2,Restaurant,Caen,
-L.S. Vivien,,Bakery,Caen,"14 Rue de la Gare, 14000 Caen"
+Name,Rating,Type,City,Address,Notes,Latitude,Longitude
+Tartines et Gourmandises,,Bakery,Caen,"20 Rue Froide, 14000 Caen","There's a permanent line in front of this place. Overall best pastries in Caen. They speak English, but they're happy to entertain people working on their French. Located on my favorite street in Caen, La Rue Froide.",49.1859,-0.3645
+Jardin Des Plantes,10,"Café, Green space",Caen,"Place Blot, 14000 Caen","There's a café which is open in the summertime, L'orangerie.",49.1814,-0.3705
+Gaston,2,Restaurant,Caen,,
+L.S. Vivien,,Bakery,Caen,"14 Rue de la Gare, 14000 Caen",
 Audio guided tour of the Bayeux Tapestry,3,Museum,Bayeux,
-Keys & Co,,"Café, Restaurant",Caen,"45 Avenue du 6 Juin, 14000 Caen"
-Le Boudoir,4,Bar,Caen,"15 Rue Pémagnie, 14000 Caen"
-Moho,,"Restaurant, Study space",Caen,"2 Rue de la Gare, 14000 Caen"
-Canaglia,6,Restaurant,Caen,"5 Rue Écuyère, 14000 Caen"
-Arromanches-les-Bains,4,Sightseeing,Arromanches-les-Bains,"2 Rue Maréchal Joffre, 14117 Arromanches-les-Bains"
-Bibliothèque de Caen,,"Study space, Library",Caen,"15 Quai François Mitterrand, 14000 Caen"
-Vertigo,3,Bar,Caen,"14 Rue Écuyère, 14000 Caen"
+Keys & Co,,"Café, Restaurant",Caen,"45 Avenue du 6 Juin, 14000 Caen",
+Le Boudoir,4,Bar,Caen,"15 Rue Pémagnie, 14000 Caen",
+Moho,,"Restaurant, Study space",Caen,"2 Rue de la Gare, 14000 Caen",
+Canaglia,6,Restaurant,Caen,"5 Rue Écuyère, 14000 Caen",
+Arromanches-les-Bains,4,Sightseeing,Arromanches-les-Bains,"2 Rue Maréchal Joffre, 14117 Arromanches-les-Bains",
+Bibliothèque de Caen,,"Study space, Library",Caen,"15 Quai François Mitterrand, 14000 Caen",
+Vertigo,3,Bar,Caen,"14 Rue Écuyère, 14000 Caen",
 Castle Picnic,,"Green space, Sightseeing",Caen,
-Arbuste,10,"Café, Coffee Roaster",Caen,"4 Rue Montoir Poissonnerie, 14000 Caen"
-Pain Vivant,,Bakery,Caen,"7 Avenue de Rouen, 14000 Caen"
-Les petites douceurs,,Café,Caen,"13 Rue aux Fromages, 14000 Caen"
-Dunes,0,Restaurant,"Nags Head, NC, USA","7013 S Croatan Hwy, Nags Head, NC 27959"
+Arbuste,10,"Café, Coffee Roaster",Caen,"4 Rue Montoir Poissonnerie, 14000 Caen",
+Pain Vivant,,Bakery,Caen,"7 Avenue de Rouen, 14000 Caen",
+Les petites douceurs,,Café,Caen,"13 Rue aux Fromages, 14000 Caen",
+Dunes,0,Restaurant,"Nags Head, NC, USA","7013 S Croatan Hwy, Nags Head, NC 27959",
 RH Pavilion,1,"Bar, Café, Restaurant",Bonn,
 5 Senses,1,Café,Bonn,
 Stadtbibliothek Bonn,1,Library,Bonn,
