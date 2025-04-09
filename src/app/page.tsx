@@ -49,13 +49,13 @@ export default function Home() {
   // Filter books based on time range and completion status
   const filteredBooks = readingData.filter(book => {
     if (book.status !== 'Completed' || !book.dateFinished) return false;
-    
+
     const finishDate = new Date(book.dateFinished);
     const now = new Date('2025-04-09'); // Using provided current time
 
     if (timeRange === 'month') {
-      return finishDate.getFullYear() === now.getFullYear() && 
-             finishDate.getMonth() === now.getMonth();
+      return finishDate.getFullYear() === now.getFullYear() &&
+        finishDate.getMonth() === now.getMonth();
     } else if (timeRange === 'year') {
       return finishDate.getFullYear() === now.getFullYear();
     }
@@ -251,36 +251,33 @@ export default function Home() {
           <p className="text-lg">{totalBooks} books, {totalPages} pages</p>
           <p className="text-gray-600 mt-1">Average time to finish: {averageMonths} {monthText}</p>
         </div>
-        
+
         {/* Time Range Selector */}
         <div className="mb-6 flex gap-2">
           <button
             onClick={() => setTimeRange('month')}
-            className={`px-4 py-2 rounded ${
-              timeRange === 'month' 
-                ? 'bg-blue-500 text-white' 
+            className={`px-4 py-2 rounded ${timeRange === 'month'
+                ? 'bg-blue-500 text-white'
                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-            }`}
+              }`}
           >
             This Month
           </button>
           <button
             onClick={() => setTimeRange('year')}
-            className={`px-4 py-2 rounded ${
-              timeRange === 'year' 
-                ? 'bg-blue-500 text-white' 
+            className={`px-4 py-2 rounded ${timeRange === 'year'
+                ? 'bg-blue-500 text-white'
                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-            }`}
+              }`}
           >
             This Year
           </button>
           <button
             onClick={() => setTimeRange('all')}
-            className={`px-4 py-2 rounded ${
-              timeRange === 'all' 
-                ? 'bg-blue-500 text-white' 
+            className={`px-4 py-2 rounded ${timeRange === 'all'
+                ? 'bg-blue-500 text-white'
                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-            }`}
+              }`}
           >
             All Time
           </button>
@@ -291,192 +288,194 @@ export default function Home() {
             <p className="text-xl text-gray-600">No books recorded for this period</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-            {/* Books and Pages Over Time */}
-            <div className="p-4 flex items-center justify-center">
-              <div className="w-full" >
-                <Line
-                  data={monthlyData}
-                  options={{
-                    responsive: true,
-                    interaction: {
-                      mode: 'index' as const,
-                      intersect: false,
-                    },
-                    plugins: {
-                      title: {
-                        display: true,
-                        text: 'Monthly Reading Progress'
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+              {/* Books and Pages Over Time */}
+              <div className="p-4 flex items-center justify-center">
+                <div className="w-full" >
+                  <Line
+                    data={monthlyData}
+                    options={{
+                      responsive: true,
+                      interaction: {
+                        mode: 'index' as const,
+                        intersect: false,
                       },
-                      legend: {
-                        position: 'bottom' as const
-                      }
-                    },
-                    scales: {
-                      y: {
-                        type: 'linear' as const,
-                        display: true,
-                        position: 'left' as const,
+                      plugins: {
                         title: {
                           display: true,
-                          text: 'Books Read'
+                          text: 'Monthly Reading Progress'
+                        },
+                        legend: {
+                          position: 'bottom' as const
                         }
                       },
-                      y1: {
-                        type: 'linear' as const,
-                        display: true,
-                        position: 'right' as const,
+                      scales: {
+                        y: {
+                          type: 'linear' as const,
+                          display: true,
+                          position: 'left' as const,
+                          title: {
+                            display: true,
+                            text: 'Books Read'
+                          }
+                        },
+                        y1: {
+                          type: 'linear' as const,
+                          display: true,
+                          position: 'right' as const,
+                          title: {
+                            display: true,
+                            text: 'Pages Read'
+                          },
+                          grid: {
+                            drawOnChartArea: false,
+                          },
+                        },
+                      },
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Genres Chart */}
+              <div className="bg-white rounded-lg shadow-lg p-4 flex items-center justify-center">
+                <div className="w-full max-w-sm">
+                  <Pie
+                    data={genreData}
+                    options={{
+                      plugins: {
                         title: {
                           display: true,
-                          text: 'Pages Read'
+                          text: 'Genre Distribution'
                         },
-                        grid: {
-                          drawOnChartArea: false,
-                        },
+                        legend: {
+                          position: 'bottom' as const
+                        }
                       },
-                    },
-                  }}
-                />
+                      radius: '70%' // Decreased from default
+                    }}
+                  />
+                </div>
               </div>
-            </div>
 
-            {/* Genres Chart */}
-            <div className="bg-white rounded-lg shadow-lg p-4 flex items-center justify-center">
-              <div className="w-full max-w-sm">
-                <Pie
-                  data={genreData}
-                  options={{
+              {/* Pace Distribution */}
+              <div className="bg-white rounded-lg shadow-lg p-4 flex items-center justify-center">
+                <div className="w-full max-w-sm">
+                  <Pie
+                    data={paceData}
+                    options={{
+                      plugins: {
+                        title: {
+                          display: true,
+                          text: 'Pace'
+                        },
+                        legend: {
+                          position: 'bottom' as const
+                        }
+                      },
+                      radius: '70%' // Decreased from default
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Most Read Authors */}
+              <div className="p-4 flex items-center justify-center">
+                <div className="w-full" style={{ height: '250px' }}>
+                  <Bar data={authorData} options={{
+                    indexAxis: 'y',
                     plugins: {
                       title: {
                         display: true,
-                        text: 'Genre Distribution'
+                        text: 'Most Read Authors'
                       },
                       legend: {
-                        position: 'bottom' as const
+                        display: false
                       }
-                    },
-                    radius: '70%' // Decreased from default
-                  }}
-                />
-              </div>
-            </div>
-
-            {/* Pace Distribution */}
-            <div className="bg-white rounded-lg shadow-lg p-4 flex items-center justify-center">
-              <div className="w-full max-w-sm">
-                <Pie
-                  data={paceData}
-                  options={{
-                    plugins: {
-                      title: {
-                        display: true,
-                        text: 'Pace'
-                      },
-                      legend: {
-                        position: 'bottom' as const
-                      }
-                    },
-                    radius: '70%' // Decreased from default
-                  }}
-                />
-              </div>
-            </div>
-
-            {/* Most Read Authors */}
-            <div className="p-4 flex items-center justify-center">
-              <div className="w-full" style={{ height: '250px' }}>
-                <Bar data={authorData} options={{
-                  indexAxis: 'y',
-                  plugins: {
-                    title: {
-                      display: true,
-                      text: 'Most Read Authors'
-                    },
-                    legend: {
-                      display: false
                     }
-                  }
-                }} />
+                  }} />
+                </div>
               </div>
-            </div>
 
-            {/* Page Count Distribution */}
-            <div className="p-4 flex items-center justify-center">
-              <div className="w-full max-w-sm">
-                <Pie
-                  data={pageCountData}
-                  options={{
-                    plugins: {
-                      title: {
-                        display: true,
-                        text: 'Page Numbers'
+              {/* Page Count Distribution */}
+              <div className="p-4 flex items-center justify-center">
+                <div className="w-full max-w-sm">
+                  <Pie
+                    data={pageCountData}
+                    options={{
+                      plugins: {
+                        title: {
+                          display: true,
+                          text: 'Page Numbers'
+                        },
+                        legend: {
+                          position: 'bottom' as const
+                        }
                       },
-                      legend: {
-                        position: 'bottom' as const
-                      }
-                    },
-                    radius: '70%' // Decreased from default
-                  }}
-                />
+                      radius: '70%' // Decreased from default
+                    }}
+                  />
+                </div>
               </div>
-            </div>
 
-            {/* Fiction/Non-fiction Split */}
-            <div className="bg-white rounded-lg shadow-lg p-4 flex items-center justify-center">
-              <div className="w-full max-w-sm">
-                <Pie
-                  data={fictionData}
-                  options={{
-                    plugins: {
-                      title: {
-                        display: true,
-                        text: 'Fiction vs Non-fiction'
+              {/* Fiction/Non-fiction Split */}
+              <div className="bg-white rounded-lg shadow-lg p-4 flex items-center justify-center">
+                <div className="w-full max-w-sm">
+                  <Pie
+                    data={fictionData}
+                    options={{
+                      plugins: {
+                        title: {
+                          display: true,
+                          text: 'Fiction vs Non-fiction'
+                        },
+                        legend: {
+                          position: 'bottom' as const
+                        }
                       },
-                      legend: {
-                        position: 'bottom' as const
-                      }
-                    },
-                    radius: '70%' // Decreased from default
-                  }}
-                />
+                      radius: '70%' // Decreased from default
+                    }}
+                  />
+                </div>
               </div>
             </div>
-          </div>
+            {/* Books Table */}
+            <div className="mt-20 overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Title
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Author
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Genre
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredBooks.map((book, index) => (
+                    <tr key={`${book.title}-${index}`} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {book.title}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {book.author}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {book.genre}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
-        
-        {/* Books Table */}
-        <div className="mt-20 overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Title
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Author
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Genre
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredBooks.map((book, index) => (
-                <tr key={`${book.title}-${index}`} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {book.title}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {book.author}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {book.genre}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+
 
         {/* All Books Table */}
         <div className="mt-20 pt-8 border-t border-gray-200">
