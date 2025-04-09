@@ -33,7 +33,7 @@ const Map = ({ places }: MapProps) => {
     // Initialize map
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/dark-v11',
+      style: 'mapbox://styles/mapbox/streets-v12',
       center: [10, 50], // Centered on Europe
       zoom: 1
     });
@@ -60,9 +60,9 @@ const Map = ({ places }: MapProps) => {
       // Create custom popup content
       const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
         <div style="padding: 8px;">
-          <h3 style="margin: 0 0 8px 0; font-weight: bold;">${place.name}</h3>
-          <p style="margin: 4px 0;">Type: ${place.type}</p>
-          <p style="margin: 4px 0;">${place.address}</p>
+          <h3 style="margin: 0 0 0 0; font-weight: bold;">${place.name}</h3>
+          <p style="margin: 0 0 0 0;">${place.type}</p>
+          <p style="margin: 8px 0 0 0;">${place.address}</p>
         </div>
       `);
 
