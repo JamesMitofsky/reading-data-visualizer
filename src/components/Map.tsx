@@ -85,6 +85,14 @@ const Map = ({ places }: MapProps) => {
   const map = useRef<mapboxgl.Map | null>(null);
   const markers = useRef<mapboxgl.Marker[]>([]);
 
+  const flyToLocation = (lng: number, lat: number, zoom: number) => {
+    map.current?.flyTo({
+      center: [lng, lat],
+      zoom,
+      essential: true
+    });
+  };
+
   useEffect(() => {
     if (!mapContainer.current) return;
 
@@ -147,15 +155,41 @@ const Map = ({ places }: MapProps) => {
   }, [places]);
 
   return (
-    <div 
-      ref={mapContainer} 
-      style={{ 
-        width: '100%', 
-        height: '70vh',
-        borderRadius: '8px',
-        overflow: 'hidden'
-      }} 
-    />
+    <div>
+      <div style={{ marginBottom: '1rem', display: 'flex', gap: '0.5rem' }}>
+        <button 
+          onClick={() => flyToLocation(-0.358, 49.18, 14)} 
+          style={{ 
+            padding: '0.5rem 1rem',
+            borderRadius: '4px',
+            border: '1px solid #ccc',
+            cursor: 'pointer'
+          }}
+        >
+          Go to Caen, France
+        </button>
+        <button 
+          onClick={() => flyToLocation(7.0999, 50.7333, 14)} 
+          style={{ 
+            padding: '0.5rem 1rem',
+            borderRadius: '4px',
+            border: '1px solid #ccc',
+            cursor: 'pointer'
+          }}
+        >
+          Go to Bonn, Germany
+        </button>
+      </div>
+      <div 
+        ref={mapContainer} 
+        style={{ 
+          width: '100%', 
+          height: '70vh',
+          borderRadius: '8px',
+          overflow: 'hidden'
+        }} 
+      />
+    </div>
   );
 };
 
