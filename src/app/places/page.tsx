@@ -49,30 +49,30 @@ export default function Places() {
 
   return (
     <main className="p-8">
-      <h1 className="text-3xl font-bold mb-6">My Favorite Places</h1>
+      <h1 className="text-3xl font-bold mb-6 dark:text-white">My Favorite Places</h1>
       <div className="mb-8 map-container">
         <Map places={placesData} onMapReady={handleMapReady} />
       </div>
       <div className="space-y-8">
         {Object.entries(groupedPlaces).map(([city, places]) => (
           <div key={city}>
-            <h2 className="text-2xl font-semibold mb-4">{city}</h2>
+            <h2 className="text-2xl font-semibold mb-4 dark:text-white">{city}</h2>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {places.map((place, index) => (
                 <div
                   key={index}
-                  className="bg-white rounded-lg shadow-md p-6 cursor-pointer transition-transform hover:scale-[1.02]"
+                  className="bg-white dark:bg-gray-800 rounded-lg shadow-md dark:shadow-gray-900 p-6 cursor-pointer transition-transform hover:scale-[1.02]"
                   onClick={() => handlePlaceClick(place)}
                 >
-                  <h3 className="text-xl font-semibold mb-2">{place.name}</h3>
+                  <h3 className="text-xl font-semibold mb-2 dark:text-white">{place.name}</h3>
                   <div className="mb-2">
-                    <span className="font-medium">{place.type}</span>
+                    <span className="font-medium dark:text-gray-200">{place.type}</span>
                   </div>
-                  <div className="mb-2 text-gray-500 text-sm">
+                  <div className="mb-2 text-gray-500 dark:text-gray-400 text-sm">
                     {place.address}
                   </div>
                   {place.notes && (
-                    <div className="mt-4 text-gray-600">
+                    <div className="mt-4 text-gray-600 dark:text-gray-300">
                       <p>{place.notes}</p>
                     </div>
                   )}

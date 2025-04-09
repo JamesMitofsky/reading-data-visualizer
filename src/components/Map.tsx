@@ -85,7 +85,7 @@ const createCustomMarkerElement = (place: Place, mapInstance: mapboxgl.Map) => {
     offset: [0, -8]
   }).setHTML(`
     <div style="padding: 8px;">
-      <h3 style="margin: 0 0 4px; font-size: 14px; font-weight: 600;">${place.name}</h3>
+      <h3 style="margin: 0 0 4px; font-size: 14px; font-weight: 600; color: #666;">${place.name}</h3>
       <p style="margin: 0; font-size: 12px; color: #666;">${place.type}</p>
       ${place.address ? `<p style="margin: 4px 0 0; font-size: 12px; color: #666;">${place.address}</p>` : ''}
     </div>
@@ -229,31 +229,31 @@ const Map = ({ places, onMapReady }: MapProps) => {
 
   return (
     <div>
-      <div className="flex gap-2 mb-4 items-center">
-        <button 
-          onClick={() => flyToLocation(49.18, -0.358)}
-          className="px-4 py-2 bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
-        >
-          Go to Caen, France
-        </button>
-        <button 
-          onClick={() => flyToLocation(50.7333, 7.0999)}
-          className="px-4 py-2 bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
-        >
-          Go to Bonn, Germany
-        </button>
-        <label className="flex items-center gap-2 ml-4">
-          <input
-            type="checkbox"
-            checked={showUserLocation}
-            onChange={(e) => setShowUserLocation(e.target.checked)}
-            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-          />
-          <span className="text-sm text-gray-700">Show me where I am</span>
-        </label>
-      </div>
-      <div ref={mapContainer} style={{ width: '100%', height: '70vh', borderRadius: '0.5rem' }} />
+    <div className="flex gap-2 mb-4 items-center">
+      <button 
+        onClick={() => flyToLocation(49.18, -0.358)}
+        className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors dark:text-white"
+      >
+        Go to Caen, France
+      </button>
+      <button 
+        onClick={() => flyToLocation(50.7333, 7.0999)}
+        className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors dark:text-white"
+      >
+        Go to Bonn, Germany
+      </button>
+      <label className="flex items-center gap-2 ml-4">
+        <input
+          type="checkbox"
+          checked={showUserLocation}
+          onChange={(e) => setShowUserLocation(e.target.checked)}
+          className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-700"
+        />
+        <span className="text-sm text-gray-700 dark:text-gray-300">Show me where I am</span>
+      </label>
     </div>
+    <div ref={mapContainer} style={{ width: '100%', height: '70vh', borderRadius: '0.5rem' }} />
+  </div>
   );
 };
 
