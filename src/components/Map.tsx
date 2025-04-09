@@ -22,6 +22,43 @@ interface MapProps {
   places: Place[];
 }
 
+const getIconForType = (type: string) => {
+  // Get first type if multiple are provided (split by comma or comma+space)
+  const firstType = type.split(/,\s*|,/)[0];
+  
+  switch (firstType.toLowerCase()) {
+    case 'bakery':
+      return '🥖';
+    case 'cafe':
+      return '☕';
+    case 'café':
+      return '☕';
+    case 'bar':
+      return '🍻';
+    case 'restaurant':
+      return '🍽️';
+    case 'museum':
+      return '🏛️';
+    case 'library':
+      return '📚';
+    case 'green space':
+      return '🌳';
+    case 'study space':
+      return '📚';
+    default:
+      return '📍';
+  }
+};
+
+const createCustomMarkerElement = (place: Place) => {
+  const markerElement = document.createElement('div');
+  markerElement.style.fontSize = '32px';
+  markerElement.style.cursor = 'pointer';
+  markerElement.textContent = getIconForType(place.type);
+  markerElement.title = `${place.name} (${place.type})`;
+  return markerElement;
+};
+
 const Map = ({ places }: MapProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
@@ -49,45 +86,43 @@ const Map = ({ places }: MapProps) => {
   }, []);
 
   useEffect(() => {
-    if (!map.current) return;
+    if (!map.current || !places.length) return;
 
-    // Clear existing markers
+    // Remove existing markers
     markers.current.forEach(marker => marker.remove());
     markers.current = [];
 
-    // Add markers for each place
+    // Add new markers
     places.forEach(place => {
-      // Create custom popup content
-      const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
-        <div style="padding: 8px;">
-          <h3 style="margin: 0 0 0 0; font-weight: bold;">${place.name}</h3>
-          <p style="margin: 0 0 0 0;">${place.type}</p>
-          <p style="margin: 8px 0 0 0;">${place.address}</p>
-        </div>
-      `);
-
-      // Create marker
+      const markerElement = createCustomMarkerElement(place);
+      
       const marker = new mapboxgl.Marker({
-        color: '#ff3333',
+        element: markerElement
       })
         .setLngLat([place.lng, place.lat])
-        .setPopup(popup)
+        .setPopup(
+          new mapboxgl.Popup({ offset: 25 })
+            .setHTML(`
+              <h3>${place.name}</h3>
+              <p>${place.type}</p>
+              <p>${place.address}</p>
+            `)
+        )
         .addTo(map.current!);
 
       markers.current.push(marker);
     });
 
-    // Fit bounds to show all markers
-    if (places.length > 0) {
-      const bounds = new mapboxgl.LngLatBounds();
-      places.forEach(place => {
-        bounds.extend([place.lng, place.lat]);
-      });
-      map.current.fitBounds(bounds, {
-        padding: 50,
-        maxZoom: 6 // Lower max zoom to keep the view more zoomed out
-      });
-    }
+    // Fit map to show all markers
+    const bounds = new mapboxgl.LngLatBounds();
+    places.forEach(place => {
+      bounds.extend([place.lng, place.lat]);
+    });
+    
+    map.current.fitBounds(bounds, {
+      padding: 50,
+      maxZoom: 15
+    });
   }, [places]);
 
   return (
