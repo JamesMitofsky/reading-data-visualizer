@@ -188,7 +188,28 @@ const Map = ({ places, onMapReady }: MapProps) => {
 
     // Hide POI labels and symbols after map loads
     map.current.on('load', () => {
+      // Points of Interest
       map.current?.setLayoutProperty('poi-label', 'visibility', 'none');
+      
+      // Examples of other layers you can toggle:
+      // Road labels
+      // map.current?.setLayoutProperty('road-label', 'visibility', 'none');
+      
+      // Building labels
+      // map.current?.setLayoutProperty('building-label', 'visibility', 'none')
+      
+      // Transit stations
+      map.current?.setLayoutProperty('transit-label', 'visibility', 'none');
+      
+      // Water labels
+      // map.current?.setLayoutProperty('water-label', 'visibility', 'none');
+      
+      // Building shapes
+      // map.current?.setLayoutProperty('building', 'visibility', 'none');
+
+      // Highway labels and shields
+      map.current?.setLayoutProperty('road-number-shield', 'visibility', 'none');
+
     });
 
     // Notify parent component that map is ready and pass the flyTo function
