@@ -54,10 +54,17 @@ export default function Home() {
     const now = new Date('2025-04-09'); // Using provided current time
 
     if (timeRange === 'month') {
-      return finishDate.getFullYear() === now.getFullYear() &&
-        finishDate.getMonth() === now.getMonth();
+      // Last month: if we're in April 2025, show March 2025
+      const lastMonth = new Date(now);
+      lastMonth.setMonth(now.getMonth() - 1);
+      return finishDate.getFullYear() === lastMonth.getFullYear() &&
+        finishDate.getMonth() === lastMonth.getMonth();
     } else if (timeRange === 'year') {
-      return finishDate.getFullYear() === now.getFullYear();
+      // Last year: if we're in 2025, show books from April 2024 to March 2025
+      const oneYearAgo = new Date(now);
+      oneYearAgo.setFullYear(now.getFullYear() - 1);
+      oneYearAgo.setMonth(now.getMonth());
+      return finishDate >= oneYearAgo && finishDate < now;
     }
     return true; // 'all' time range
   });
@@ -261,7 +268,7 @@ export default function Home() {
                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
               }`}
           >
-            This Month
+            Last Month
           </button>
           <button
             onClick={() => setTimeRange('year')}
@@ -270,7 +277,7 @@ export default function Home() {
                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
               }`}
           >
-            This Year
+            Last Year
           </button>
           <button
             onClick={() => setTimeRange('all')}
