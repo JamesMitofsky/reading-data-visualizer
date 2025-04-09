@@ -186,6 +186,11 @@ const Map = ({ places, onMapReady }: MapProps) => {
       zoom: places[0] ? 12 : 2
     });
 
+    // Hide POI labels and symbols after map loads
+    map.current.on('load', () => {
+      map.current?.setLayoutProperty('poi-label', 'visibility', 'none');
+    });
+
     // Notify parent component that map is ready and pass the flyTo function
     onMapReady?.(flyToLocation);
 
