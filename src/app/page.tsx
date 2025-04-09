@@ -36,6 +36,7 @@ interface MonthlyStats {
 
 export default function Home() {
   const [readingData, setReadingData] = useState<ReadingData[]>([]);
+  const [timeRange, setTimeRange] = useState<'month' | 'year' | 'all'>('all');
 
   useEffect(() => {
     const loadData = async () => {
@@ -45,13 +46,27 @@ export default function Home() {
     loadData();
   }, []);
 
-  // Only include completed books
-  const completedBooks = readingData.filter(book => book.status === 'Completed');
-  const totalBooks = completedBooks.length;
-  const totalPages = completedBooks.reduce((sum, book) => sum + (book.pageCount || 0), 0);
+  // Filter books based on time range and completion status
+  const filteredBooks = readingData.filter(book => {
+    if (book.status !== 'Completed' || !book.dateFinished) return false;
+    
+    const finishDate = new Date(book.dateFinished);
+    const now = new Date('2025-04-09'); // Using provided current time
+
+    if (timeRange === 'month') {
+      return finishDate.getFullYear() === now.getFullYear() && 
+             finishDate.getMonth() === now.getMonth();
+    } else if (timeRange === 'year') {
+      return finishDate.getFullYear() === now.getFullYear();
+    }
+    return true; // 'all' time range
+  });
+
+  const totalBooks = filteredBooks.length;
+  const totalPages = filteredBooks.reduce((sum, book) => sum + (book.pageCount || 0), 0);
 
   // Calculate genre distribution
-  const genreCounts = completedBooks.reduce((acc: { [key: string]: number }, book) => {
+  const genreCounts = filteredBooks.reduce((acc: { [key: string]: number }, book) => {
     if (!book.genre) return acc;
 
     // Split genres and trim whitespace
@@ -88,9 +103,9 @@ export default function Home() {
   };
 
   // Calculate fiction vs non-fiction using isFiction field
-  const fictionCount = completedBooks.filter(book => book.isFiction === true).length;
+  const fictionCount = filteredBooks.filter(book => book.isFiction === true).length;
   // Count both explicit false and null (unspecified) as non-fiction
-  const nonFictionCount = completedBooks.filter(book => book.isFiction === false || book.isFiction === null).length;
+  const nonFictionCount = filteredBooks.filter(book => book.isFiction === false || book.isFiction === null).length;
 
   const fictionData = {
     labels: ['Fiction', 'Non-fiction'],
@@ -108,12 +123,12 @@ export default function Home() {
     const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
     const pagesPerDay = (book.pageCount || 0) / days;
 
-    if (pagesPerDay >= 50) return 'Fast';
-    if (pagesPerDay >= 25) return 'Medium';
-    return 'Slow';
+    if (pagesPerDay >= 50) return 'Fast (50+ pages/day)';
+    if (pagesPerDay >= 25) return 'Medium (25-49 pages/day)';
+    return 'Slow (0-25 pages/day)';
   };
 
-  const paceDistribution = completedBooks.reduce((acc: { [key: string]: number }, book) => {
+  const paceDistribution = filteredBooks.reduce((acc: { [key: string]: number }, book) => {
     const pace = calculateReadingPace(book);
     if (pace) {
       acc[pace] = (acc[pace] || 0) + 1;
@@ -130,7 +145,7 @@ export default function Home() {
   };
 
   // Calculate page count distribution
-  const pageDistribution = completedBooks.reduce((acc: { [key: string]: number }, book) => {
+  const pageDistribution = filteredBooks.reduce((acc: { [key: string]: number }, book) => {
     if (!book.pageCount) return acc;
 
     if (book.pageCount >= 500) {
@@ -152,7 +167,7 @@ export default function Home() {
   };
 
   // Calculate most read authors
-  const authorCounts = completedBooks.reduce((acc: { [key: string]: number }, book) => {
+  const authorCounts = filteredBooks.reduce((acc: { [key: string]: number }, book) => {
     if (book.author) {
       acc[book.author] = (acc[book.author] || 0) + 1;
     }
@@ -173,7 +188,7 @@ export default function Home() {
   };
 
   // Calculate books and pages by month
-  const monthlyStats = completedBooks.reduce<MonthlyStats>((acc, book) => {
+  const monthlyStats = filteredBooks.reduce<MonthlyStats>((acc, book) => {
     if (book.dateFinished) {
       const date = new Date(book.dateFinished);
       const monthKey = date.toLocaleString('default', { month: 'short' });
@@ -216,29 +231,62 @@ export default function Home() {
   };
 
   // Calculate average time to finish
-  const averageTimeToFinish = completedBooks.reduce((sum, book) => {
+  const averageTimeToFinish = filteredBooks.reduce((sum, book) => {
     if (book.dateStarted && book.dateFinished) {
       const start = new Date(book.dateStarted);
       const end = new Date(book.dateFinished);
       return sum + (end.getTime() - start.getTime());
     }
     return sum;
-  }, 0) / (completedBooks.length || 1);
+  }, 0) / (filteredBooks.length || 1);
 
   const averageMonths = Math.round(averageTimeToFinish / (1000 * 60 * 60 * 24 * 30));
   const monthText = averageMonths === 1 ? 'month' : 'months';
 
   return (
-    <div className="min-h-screen p-4 bg-white">
-      <main className="max-w-5xl mx-auto space-y-8">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-1">James&apos; Reading Data</h1>
+    <main className="min-h-screen p-8 bg-gray-50">
+      <div className="max-w-6xl mx-auto">
+        <h1 className="text-4xl font-bold text-gray-900 ">James Mitofsky&apos;s Reading Statistics</h1>
+        <div className='my-8'>
           <p className="text-lg">{totalBooks} books, {totalPages} pages</p>
           <p className="text-gray-600 mt-1">Average time to finish: {averageMonths} {monthText}</p>
         </div>
+        
+        {/* Time Range Selector */}
+        <div className="mb-6 flex gap-2">
+          <button
+            onClick={() => setTimeRange('month')}
+            className={`px-4 py-2 rounded ${
+              timeRange === 'month' 
+                ? 'bg-purple-600 text-white' 
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            This Month
+          </button>
+          <button
+            onClick={() => setTimeRange('year')}
+            className={`px-4 py-2 rounded ${
+              timeRange === 'year' 
+                ? 'bg-purple-600 text-white' 
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            This Year
+          </button>
+          <button
+            onClick={() => setTimeRange('all')}
+            className={`px-4 py-2 rounded ${
+              timeRange === 'all' 
+                ? 'bg-purple-600 text-white' 
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            All Time
+          </button>
+        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
           {/* Books and Pages Over Time */}
           <div className="p-4 flex items-center justify-center">
             <div className="w-full" >
@@ -287,7 +335,6 @@ export default function Home() {
             </div>
           </div>
 
-
           {/* Genres Chart */}
           <div className="bg-white rounded-lg shadow-lg p-4 flex items-center justify-center">
             <div className="w-full max-w-sm">
@@ -330,8 +377,8 @@ export default function Home() {
             </div>
           </div>
 
-           {/* Most Read Authors */}
-           <div className="p-4 flex items-center justify-center">
+          {/* Most Read Authors */}
+          <div className="p-4 flex items-center justify-center">
             <div className="w-full" style={{ height: '250px' }}>
               <Bar data={authorData} options={{
                 indexAxis: 'y',
@@ -389,9 +436,8 @@ export default function Home() {
               />
             </div>
           </div>
-
         </div>
-      </main>
-    </div>
+      </div>
+    </main>
   );
 }
