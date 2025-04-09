@@ -229,7 +229,7 @@ const Map = ({ places, onMapReady }: MapProps) => {
           <span className="text-sm text-gray-700">Show me where I am</span>
         </label>
       </div>
-      <div ref={mapContainer} style={{ width: '100%', height: '500px', borderRadius: '0.5rem' }} />
+      <div ref={mapContainer} style={{ width: '100%', height: '70vh', borderRadius: '0.5rem' }} />
     </div>
   );
 };
