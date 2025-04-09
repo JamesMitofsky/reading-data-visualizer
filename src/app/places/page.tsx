@@ -17,7 +17,7 @@ export default function Places() {
 
   return (
     <main className="p-8">
-      <h1 className="text-3xl font-bold mb-6">Places in Caen</h1>
+      <h1 className="text-3xl font-bold mb-6">My Favorite Places</h1>
       <div className="mb-8">
         <Map places={placesData} />
       </div>
@@ -26,10 +26,10 @@ export default function Places() {
           <div key={index} className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-xl font-semibold mb-2">{place.name}</h2>
             <div className="mb-2">
-              <span className="font-medium">Type:</span> {place.type}
+              <span className="font-medium">{place.type}</span>
             </div>
-            <div className="mb-2">
-              <span className="font-medium">Address:</span> {place.address}
+            <div className="mb-2 text-gray-500 text-sm">
+             {place.address}
             </div>
             {place.notes && (
               <div className="mt-4 text-gray-600">
