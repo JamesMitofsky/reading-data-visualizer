@@ -46,9 +46,8 @@ export default function Home() {
 
   // Calculate genre distribution
   const genreCounts = completedBooks.reduce((acc: { [key: string]: number }, book) => {
-    if (book.genre) {
-      acc[book.genre] = (acc[book.genre] || 0) + 1;
-    }
+    const genre = book.genre || 'Uncategorized';
+    acc[genre] = (acc[genre] || 0) + 1;
     return acc;
   }, {});
 
@@ -60,6 +59,7 @@ export default function Home() {
         '#6b46c1', '#0ea5e9', '#10b981', '#ec4899', 
         '#f97316', '#ef4444', '#84cc16', '#06b6d4'
       ],
+      label: 'Books per Genre'
     }]
   };
 
@@ -209,7 +209,23 @@ export default function Home() {
           {/* Genres Chart */}
           <div className="bg-white p-6 rounded-lg shadow">
             <h2 className="text-xl font-semibold mb-4">Genres</h2>
-            <Bar data={genreData} options={{ indexAxis: 'y' }} />
+            <Bar data={genreData} options={{ 
+              indexAxis: 'y',
+              plugins: {
+                legend: {
+                  display: false
+                }
+              },
+              scales: {
+                x: {
+                  beginAtZero: true,
+                  title: {
+                    display: true,
+                    text: 'Number of Books'
+                  }
+                }
+              }
+            }} />
           </div>
 
           {/* Pace Distribution */}
