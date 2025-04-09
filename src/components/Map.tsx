@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
@@ -54,7 +54,7 @@ const getIconForType = (type: string) => {
       </svg>`;
     default:
       return `<svg viewBox="0 0 24 24" fill="#85B8A4" width="24" height="24">
-        <path d="M12,2C8.13,2,5,5.13,5,9c0,5.25,7,13,7,13s7-7.75,7-13C19,5.13,15.87,2,12,2z M12,11.5c-1.38,0-2.5-1.12-2.5-2.5 s1.12-2.5,2.5-2.5s2.5,1.12,2.5,2.5S13.38,11.5,12,11.5z"/>
+        <path d="M12,2C8.13,2,5,5.13,5,9c0,5.25,7,13,7,13s7-7.75,7-13C19,5.13,15.87,2,12,2z M12,5l4,2.5L12,10L8,7.5L12,5z M20,20H4v-8H2v10h20V12h-2V20z"/>
       </svg>`;
   }
 };
@@ -85,6 +85,8 @@ const Map = ({ places, onMapReady }: MapProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markers = useRef<mapboxgl.Marker[]>([]);
+  const userLocationMarker = useRef<mapboxgl.Marker | null>(null);
+  const [showUserLocation, setShowUserLocation] = useState(false);
 
   const flyToLocation = useCallback((lat: number, lng: number) => {
     map.current?.flyTo({
@@ -94,13 +96,70 @@ const Map = ({ places, onMapReady }: MapProps) => {
     });
   }, []);
 
+  // Handle user location
+  const handleUserLocation = useCallback(() => {
+    if (!map.current || !showUserLocation) return;
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          
+          // Create user location marker element
+          const userMarkerEl = document.createElement('div');
+          userMarkerEl.style.width = '20px';
+          userMarkerEl.style.height = '20px';
+          userMarkerEl.style.borderRadius = '50%';
+          userMarkerEl.style.background = '#4A90E2';
+          userMarkerEl.style.border = '3px solid white';
+          userMarkerEl.style.boxShadow = '0 0 0 2px #4A90E2';
+          userMarkerEl.title = 'Your Location';
+
+          // Add pulse animation
+          const pulseEl = document.createElement('div');
+          pulseEl.style.position = 'absolute';
+          pulseEl.style.width = '20px';
+          pulseEl.style.height = '20px';
+          pulseEl.style.borderRadius = '50%';
+          pulseEl.style.background = 'rgba(74, 144, 226, 0.3)';
+          pulseEl.style.animation = 'pulse 2s infinite';
+          userMarkerEl.appendChild(pulseEl);
+
+          // Add the CSS animation
+          const style = document.createElement('style');
+          style.textContent = `
+            @keyframes pulse {
+              0% { transform: scale(1); opacity: 1; }
+              100% { transform: scale(3); opacity: 0; }
+            }
+          `;
+          document.head.appendChild(style);
+
+          // Add marker to map
+          if (userLocationMarker.current) {
+            userLocationMarker.current.remove();
+          }
+          if (map.current) {
+            userLocationMarker.current = new mapboxgl.Marker({ element: userMarkerEl })
+              .setLngLat([longitude, latitude])
+              .addTo(map.current);
+          }
+        },
+        (error) => {
+          console.error('Error getting user location:', error);
+          setShowUserLocation(false); // Reset checkbox if there's an error
+        }
+      );
+    }
+  }, [showUserLocation]);
+
   useEffect(() => {
     if (!mapContainer.current) return;
 
     // Initialize map
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/light-v11',
+      style: 'mapbox://styles/mapbox/streets-v12',
       center: [places[0]?.lng || -0.37, places[0]?.lat || 49.18],
       zoom: places[0] ? 12 : 2
     });
@@ -111,8 +170,21 @@ const Map = ({ places, onMapReady }: MapProps) => {
     // Cleanup function
     return () => {
       map.current?.remove();
+      if (userLocationMarker.current) {
+        userLocationMarker.current.remove();
+      }
     };
   }, [places, onMapReady, flyToLocation]);
+
+  // Handle user location changes
+  useEffect(() => {
+    if (!showUserLocation && userLocationMarker.current) {
+      userLocationMarker.current.remove();
+      userLocationMarker.current = null;
+    } else if (showUserLocation) {
+      handleUserLocation();
+    }
+  }, [showUserLocation, handleUserLocation]);
 
   useEffect(() => {
     if (!map.current) return;
@@ -134,7 +206,7 @@ const Map = ({ places, onMapReady }: MapProps) => {
 
   return (
     <div>
-      <div className="flex gap-2 mb-4">
+      <div className="flex gap-2 mb-4 items-center">
         <button 
           onClick={() => flyToLocation(49.18, -0.358)}
           className="px-4 py-2 bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
@@ -147,6 +219,15 @@ const Map = ({ places, onMapReady }: MapProps) => {
         >
           Go to Bonn, Germany
         </button>
+        <label className="flex items-center gap-2 ml-4">
+          <input
+            type="checkbox"
+            checked={showUserLocation}
+            onChange={(e) => setShowUserLocation(e.target.checked)}
+            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+          />
+          <span className="text-sm text-gray-700">Show me where I am</span>
+        </label>
       </div>
       <div ref={mapContainer} style={{ width: '100%', height: '500px', borderRadius: '0.5rem' }} />
     </div>
