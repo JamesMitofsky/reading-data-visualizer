@@ -124,6 +124,10 @@ const Map = ({ places, onMapReady }: MapProps) => {
   const [showUserLocation, setShowUserLocation] = useState(false);
   const { latitude, longitude, error: geoError, loading } = useGeolocation();
 
+  // Check if device is iOS/Safari
+  const isIOSorSafari = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                        /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
   // Separate function to request location
   const requestLocation = useCallback(() => {
     if (!latitude || !longitude) return;
@@ -310,60 +314,62 @@ const Map = ({ places, onMapReady }: MapProps) => {
         >
           Go to Bonn, Germany
         </button>
-        <button
-          onClick={() => {
-            if (showUserLocation) {
-              setShowUserLocation(false);
-              if (userLocationMarker.current) {
-                userLocationMarker.current.remove();
-                userLocationMarker.current = null;
+        {/* Hide location button on iOS/Safari */}
+        {!isIOSorSafari && (
+          <button
+            onClick={() => {
+              if (showUserLocation) {
+                if (userLocationMarker.current) {
+                  userLocationMarker.current.remove();
+                  userLocationMarker.current = null;
+                }
+              } else {
+                setShowUserLocation(true);
               }
-            } else {
-              setShowUserLocation(true);
-            }
-          }}
-          onTouchStart={(e) => {
-            // Prevent double-tap zoom on iOS
-            e.preventDefault();
-          }}
-          style={{
-            // Disable grey highlight on tap in iOS
-            WebkitTapHighlightColor: 'transparent',
-            // Prevent text selection
-            WebkitUserSelect: 'none',
-            userSelect: 'none',
-            // Ensure the button is clickable
-            cursor: 'pointer',
-            // Prevent iOS text size adjust
-            WebkitTextSizeAdjust: 'none'
-          }}
-          className={`flex items-center gap-2 ml-4 px-3 py-2 rounded-lg ${
-            showUserLocation 
-              ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' 
-              : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
-          } hover:bg-opacity-80 transition-colors active:bg-opacity-70 ${
-            loading ? 'opacity-50 cursor-wait' : ''
-          }`}
-          disabled={loading}
-        >
-          <svg 
-            xmlns="http://www.w3.org/2000/svg" 
-            className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`}
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
+            }}
+            onTouchStart={(e) => {
+              // Prevent double-tap zoom on iOS
+              e.preventDefault();
+            }}
+            style={{
+              // Disable grey highlight on tap in iOS
+              WebkitTapHighlightColor: 'transparent',
+              // Prevent text selection
+              WebkitUserSelect: 'none',
+              userSelect: 'none',
+              // Ensure the button is clickable
+              cursor: 'pointer',
+              // Prevent iOS text size adjust
+              WebkitTextSizeAdjust: 'none'
+            }}
+            className={`flex items-center gap-2 ml-4 px-3 py-2 rounded-lg ${
+              showUserLocation 
+                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' 
+                : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
+            } hover:bg-opacity-80 transition-colors active:bg-opacity-70 ${
+              loading ? 'opacity-50 cursor-wait' : ''
+            }`}
+            disabled={loading}
           >
-            {loading ? (
-              <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/>
-            ) : (
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z M12 7a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3z"/>
-            )}
-          </svg>
-          {loading ? 'Getting location...' : 'Show my location'}
-        </button>
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`}
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              {loading ? (
+                <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/>
+              ) : (
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z M12 7a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3z"/>
+              )}
+            </svg>
+            {loading ? 'Getting location...' : 'Show my location'}
+          </button>
+        )}
       </div>
       <div ref={mapContainer} style={{ width: '100%', height: '70vh', borderRadius: '0.5rem' }} />
     </div>
