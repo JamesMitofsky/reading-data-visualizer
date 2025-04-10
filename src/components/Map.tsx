@@ -177,13 +177,56 @@ const Map = ({ places, onMapReady }: MapProps) => {
             userLocationMarker.current = new mapboxgl.Marker({ element: userMarkerEl })
               .setLngLat([longitude, latitude])
               .addTo(map.current);
+
+            // Fly to user location
+            map.current.flyTo({
+              center: [longitude, latitude],
+              zoom: 14,
+              essential: true
+            });
           }
         },
         (error) => {
-          console.error('Error getting user location:', error);
-          setShowUserLocation(false); // Reset checkbox if there's an error
+          // Log detailed error information
+          console.error('Geolocation error details:', {
+            code: error.code,
+            message: error.message,
+            PERMISSION_DENIED: error.PERMISSION_DENIED,
+            POSITION_UNAVAILABLE: error.POSITION_UNAVAILABLE,
+            TIMEOUT: error.TIMEOUT
+          });
+
+          let errorMessage = '';
+          
+          // Handle specific error codes
+          switch(error.code) {
+            case 1: // PERMISSION_DENIED
+              errorMessage = 'Location permission denied. Please enable location services in your device settings and reload the page.';
+              break;
+            case 2: // POSITION_UNAVAILABLE
+              errorMessage = 'Unable to determine your location. Please check your device location settings.';
+              break;
+            case 3: // TIMEOUT
+              errorMessage = 'Location request timed out. Please try again.';
+              break;
+            default:
+              errorMessage = 'Unable to get your location. Please make sure location services are enabled.';
+          }
+
+          // Show error message to user
+          alert(errorMessage);
+          console.error('Geolocation error:', error.message || 'No error message available');
+          setShowUserLocation(false);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 5000,
+          maximumAge: 0
         }
       );
+    } else {
+      alert('Geolocation is not supported by your browser');
+      setShowUserLocation(false);
     }
   }, [showUserLocation]);
 
@@ -299,15 +342,34 @@ const Map = ({ places, onMapReady }: MapProps) => {
         >
           Go to Bonn, Germany
         </button>
-        <label className="flex items-center gap-2 ml-4">
-          <input
-            type="checkbox"
-            checked={showUserLocation}
-            onChange={(e) => setShowUserLocation(e.target.checked)}
-            className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-700"
-          />
-          <span className="text-sm text-gray-700 dark:text-gray-300">Show where I am</span>
-        </label>
+        <button
+          onClick={() => {
+            if (showUserLocation) {
+              setShowUserLocation(false);
+              if (userLocationMarker.current) {
+                userLocationMarker.current.remove();
+                userLocationMarker.current = null;
+              }
+            } else {
+              setShowUserLocation(true);
+            }
+          }}
+          className={`flex items-center gap-2 ml-4 px-3 py-2 rounded-lg ${
+            showUserLocation 
+              ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' 
+              : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
+          } hover:bg-opacity-80 transition-colors`}
+        >
+          <svg 
+            xmlns="http://www.w3.org/2000/svg" 
+            viewBox="0 0 24 24" 
+            fill="currentColor" 
+            className="w-5 h-5"
+          >
+            <path fillRule="evenodd" d="M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 00-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 002.682 2.282 16.975 16.975 0 001.145.742zM12 13.5a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
+          </svg>
+          Show my location
+        </button>
       </div>
       <div ref={mapContainer} style={{ width: '100%', height: '70vh', borderRadius: '0.5rem' }} />
     </div>
