@@ -3,6 +3,7 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import { useGeolocation } from '@uidotdev/usehooks';
 
 // Use environment variable for the access token
 if (!process.env.NEXT_PUBLIC_MAPBOX_TOKEN) {
@@ -40,7 +41,7 @@ const getIconForType = (type: string) => {
 
   if (types.includes('restaurant')) {
     return `<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 122.88 81.62" width="24" height="24">
-      <path fill="#c7b3e3" fill-rule="evenodd" clip-rule="evenodd" d="M61.63,0c4.69,0,8.5,3.8,8.5,8.5c0,2.02-0.71,3.88-1.89,5.34c5.14,0.64,10.21,2.04,14.99,4.19 c17.51,7.87,31.18,25.79,31.2,53.73c0,1.04-0.85,1.89-1.89,1.89v0.01H10.72c-1.05,0-1.9-0.85-1.9-1.9c0-0.06,0-0.12,0.01-0.18 C8.9,43.74,22.56,25.88,40.02,18.03c4.78-2.15,9.85-3.55,14.99-4.19c-1.18-1.46-1.89-3.32-1.89-5.34C53.13,3.8,56.93,0,61.63,0 L61.63,0z"/>
+      <path fill="#c7b3e3" fill-rule="evenodd" clip-rule="evenodd" d="M61.63,0c4.97,0,8.5,3.8,8.5,8.5c0,2.02-0.71,3.88-1.89,5.34c5.14,0.64,10.21,2.04,14.99,4.19 c17.51,7.87,31.18,25.79,31.2,53.73c0,1.04-0.85,1.89-1.89,1.89v0.01H10.72c-1.05,0-1.9-0.85-1.9-1.9c0-0.06,0-0.12,0.01-0.18 C8.9,43.74,22.56,25.88,40.02,18.03c4.78-2.15,9.85-3.55,14.99-4.19c-1.18-1.46-1.89-3.32-1.89-5.34C53.13,3.8,56.93,0,61.63,0 L61.63,0z"/>
     </svg>`;
   }
 
@@ -59,7 +60,7 @@ const getIconForType = (type: string) => {
 
   if (types.includes('greenery')) {
     return `<svg fill="#8BC34A" width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-      <path d="M12 22c4.97 0 9-4.03 9-9-4.97 0-9 4.03-9 9zM5.6 10.25c0 1.38 1.12 2.5 2.5 2.5.53 0 1.01-.16 1.42-.44l-.02.19c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5l-.02-.19c.4.28.89.44 1.42.44 1.38 0 2.5-1.12 2.5-2.5 0-1-.59-1.85-1.43-2.25.84-.4 1.43-1.25 1.43-2.25 0-1.38-1.12-2.5-2.5-2.5-.53 0-1.01.16-1.42.44l.02-.19C14.5 2.12 13.38 1 12 1S9.5 2.12 9.5 3.5l.02.19c-.4-.28-.89-.44-1.42-.44-1.38 0-2.5 1.12-2.5 2.5 0 1 .59 1.85 1.43 2.25-.84.4-1.43 1.25-1.43 2.25zM12 5.5c1.38 0 2.5 1.12 2.5 2.5s-1.12 2.5-2.5 2.5S9.5 9.38 9.5 8s1.12-2.5 2.5-2.5z"/>
+      <path d="M12 22c4.97 0 9-4.03 9-9-4.97 0-9 4.03-9 9zM5.6 10.25c0 1.38 1.12 2.5 2.5 2.5.53 0 1.01-.16 1.42-.44l-.02.19c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5l-.02-.19c.4.28.89.44 1.42.44 1.38 0 2.5-1.12 2.5-2.5 0-1-.59-1.85-1.43-2.25.84-.4 1.43-1.25 1.43-2.25 0-1.38-1.12-2.5-2.5-2.5-.53 0-1.01.16-1.42.44l.02-.19C14.5 2.12 13.38 1 12 1S9.5 2.12 9.5 3.5l.02.19c-.4.28-.89.44-1.42.44-1.38 0-2.5 1.12-2.5 2.5 0 1 .59 1.85 1.43 2.25-.84.4-1.43 1.25-1.43 2.25zM12 5.5c1.38 0 2.5 1.12 2.5 2.5s-1.12 2.5-2.5 2.5S9.5 9.38 9.5 8s1.12-2.5 2.5-2.5z"/>
     </svg>`;
   }
 
@@ -121,6 +122,89 @@ const Map = ({ places, onMapReady }: MapProps) => {
   const markers = useRef<{ marker: mapboxgl.Marker; popup: mapboxgl.Popup }[]>([]);
   const userLocationMarker = useRef<mapboxgl.Marker | null>(null);
   const [showUserLocation, setShowUserLocation] = useState(false);
+  const { latitude, longitude, error: geoError, loading } = useGeolocation();
+
+  // Separate function to request location
+  const requestLocation = useCallback(() => {
+    if (!latitude || !longitude) return;
+
+    // Create user location marker element
+    const userMarkerEl = document.createElement('div');
+    userMarkerEl.style.width = '20px';
+    userMarkerEl.style.height = '20px';
+    userMarkerEl.style.borderRadius = '50%';
+    userMarkerEl.style.background = '#4A90E2';
+    userMarkerEl.style.border = '3px solid white';
+    userMarkerEl.style.boxShadow = '0 0 0 2px #4A90E2';
+    userMarkerEl.title = 'Your Location';
+
+    // Add pulse animation
+    const pulseEl = document.createElement('div');
+    pulseEl.style.position = 'absolute';
+    pulseEl.style.width = '20px';
+    pulseEl.style.height = '20px';
+    pulseEl.style.borderRadius = '50%';
+    pulseEl.style.background = 'rgba(74, 144, 226, 0.3)';
+    pulseEl.style.animation = 'pulse 2s infinite';
+    userMarkerEl.appendChild(pulseEl);
+
+    // Add the CSS animation
+    if (!document.getElementById('location-pulse-style')) {
+      const style = document.createElement('style');
+      style.id = 'location-pulse-style';
+      style.textContent = `
+        @keyframes pulse {
+          0% { transform: scale(1); opacity: 1; }
+          100% { transform: scale(3); opacity: 0; }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    // Add marker to map
+    if (userLocationMarker.current) {
+      userLocationMarker.current.remove();
+    }
+    if (map.current) {
+      userLocationMarker.current = new mapboxgl.Marker({ element: userMarkerEl })
+        .setLngLat([longitude, latitude])
+        .addTo(map.current);
+
+      // Fly to user location
+      map.current.flyTo({
+        center: [longitude, latitude],
+        zoom: 14,
+        essential: true
+      });
+    }
+  }, [latitude, longitude]);
+
+  // Handle user location changes
+  useEffect(() => {
+    if (!showUserLocation) {
+      if (userLocationMarker.current) {
+        userLocationMarker.current.remove();
+        userLocationMarker.current = null;
+      }
+    } else if (latitude && longitude) {
+      requestLocation();
+    } else if (geoError) {
+      let errorMessage = 'Unable to get your location. ';
+      
+      if (geoError.message.includes('denied')) {
+        errorMessage += 'Please enable location access in your device settings and try again.';
+      } else if (geoError.message.includes('timeout')) {
+        errorMessage += 'The request timed out. Please try again.';
+      } else if (geoError.message.includes('unavailable')) {
+        errorMessage += 'Location service is unavailable. Please check your device settings.';
+      } else {
+        errorMessage += 'Please make sure location services are enabled.';
+      }
+      
+      alert(errorMessage);
+      setShowUserLocation(false);
+    }
+  }, [showUserLocation, latitude, longitude, geoError, requestLocation]);
 
   const flyToLocation = useCallback((lat: number, lng: number) => {
     map.current?.flyTo({
@@ -129,106 +213,6 @@ const Map = ({ places, onMapReady }: MapProps) => {
       essential: true
     });
   }, []);
-
-  // Handle user location
-  const handleUserLocation = useCallback(() => {
-    if (!map.current || !showUserLocation) return;
-
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-
-          // Create user location marker element
-          const userMarkerEl = document.createElement('div');
-          userMarkerEl.style.width = '20px';
-          userMarkerEl.style.height = '20px';
-          userMarkerEl.style.borderRadius = '50%';
-          userMarkerEl.style.background = '#4A90E2';
-          userMarkerEl.style.border = '3px solid white';
-          userMarkerEl.style.boxShadow = '0 0 0 2px #4A90E2';
-          userMarkerEl.title = 'Your Location';
-
-          // Add pulse animation
-          const pulseEl = document.createElement('div');
-          pulseEl.style.position = 'absolute';
-          pulseEl.style.width = '20px';
-          pulseEl.style.height = '20px';
-          pulseEl.style.borderRadius = '50%';
-          pulseEl.style.background = 'rgba(74, 144, 226, 0.3)';
-          pulseEl.style.animation = 'pulse 2s infinite';
-          userMarkerEl.appendChild(pulseEl);
-
-          // Add the CSS animation
-          const style = document.createElement('style');
-          style.textContent = `
-            @keyframes pulse {
-              0% { transform: scale(1); opacity: 1; }
-              100% { transform: scale(3); opacity: 0; }
-            }
-          `;
-          document.head.appendChild(style);
-
-          // Add marker to map
-          if (userLocationMarker.current) {
-            userLocationMarker.current.remove();
-          }
-          if (map.current) {
-            userLocationMarker.current = new mapboxgl.Marker({ element: userMarkerEl })
-              .setLngLat([longitude, latitude])
-              .addTo(map.current);
-
-            // Fly to user location
-            map.current.flyTo({
-              center: [longitude, latitude],
-              zoom: 14,
-              essential: true
-            });
-          }
-        },
-        (error) => {
-          // Log detailed error information
-          console.error('Geolocation error details:', {
-            code: error.code,
-            message: error.message,
-            PERMISSION_DENIED: error.PERMISSION_DENIED,
-            POSITION_UNAVAILABLE: error.POSITION_UNAVAILABLE,
-            TIMEOUT: error.TIMEOUT
-          });
-
-          let errorMessage = '';
-          
-          // Handle specific error codes
-          switch(error.code) {
-            case 1: // PERMISSION_DENIED
-              errorMessage = 'Location permission denied. Please enable location services in your device settings and reload the page.';
-              break;
-            case 2: // POSITION_UNAVAILABLE
-              errorMessage = 'Unable to determine your location. Please check your device location settings.';
-              break;
-            case 3: // TIMEOUT
-              errorMessage = 'Location request timed out. Please try again.';
-              break;
-            default:
-              errorMessage = 'Unable to get your location. Please make sure location services are enabled.';
-          }
-
-          // Show error message to user
-          alert(errorMessage);
-          console.error('Geolocation error:', error.message || 'No error message available');
-          setShowUserLocation(false);
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 5000,
-          maximumAge: 0
-        }
-      );
-    } else {
-      alert('Geolocation is not supported by your browser');
-      setShowUserLocation(false);
-    }
-  }, [showUserLocation]);
 
   useEffect(() => {
     if (!mapContainer.current) return;
@@ -241,11 +225,8 @@ const Map = ({ places, onMapReady }: MapProps) => {
       zoom: places[0] ? 14 : 2
     });
 
-
     // Hide POI labels and symbols after map loads
     map.current.on('load', () => {
-
-
       const layersToHide = [
         'place-label', 'water-label', 'poi-label',
         'road-number-shield', 'transit-label',
@@ -271,7 +252,6 @@ const Map = ({ places, onMapReady }: MapProps) => {
 
       const allLayersToHide = [...layersToHide, ...pedestrianLayerIds];
 
-
       allLayersToHide.forEach(id => {
         if (map.current?.getLayer(id)) {
           map.current?.setLayoutProperty(id, 'visibility', 'none');
@@ -281,8 +261,6 @@ const Map = ({ places, onMapReady }: MapProps) => {
       map.current?.setPaintProperty('road-label', 'text-opacity', 0.6); // 0 to 1
       map.current?.setPaintProperty('path-pedestrian-label', 'text-opacity', 0.5); // 0 to 1
     });
-
-
 
     // Re-run this every time  zoom changes
     map.current?.on('zoom', () => map.current?.setPaintProperty('road-label', 'text-opacity', 0.2)); // 0 to 1
@@ -297,16 +275,6 @@ const Map = ({ places, onMapReady }: MapProps) => {
       }
     };
   }, [places, onMapReady, flyToLocation]);
-
-  // Handle user location changes
-  useEffect(() => {
-    if (!showUserLocation && userLocationMarker.current) {
-      userLocationMarker.current.remove();
-      userLocationMarker.current = null;
-    } else if (showUserLocation) {
-      handleUserLocation();
-    }
-  }, [showUserLocation, handleUserLocation]);
 
   useEffect(() => {
     if (!map.current || !places) return;
@@ -354,21 +322,47 @@ const Map = ({ places, onMapReady }: MapProps) => {
               setShowUserLocation(true);
             }
           }}
+          onTouchStart={(e) => {
+            // Prevent double-tap zoom on iOS
+            e.preventDefault();
+          }}
+          style={{
+            // Disable grey highlight on tap in iOS
+            WebkitTapHighlightColor: 'transparent',
+            // Prevent text selection
+            WebkitUserSelect: 'none',
+            userSelect: 'none',
+            // Ensure the button is clickable
+            cursor: 'pointer',
+            // Prevent iOS text size adjust
+            WebkitTextSizeAdjust: 'none'
+          }}
           className={`flex items-center gap-2 ml-4 px-3 py-2 rounded-lg ${
             showUserLocation 
               ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' 
               : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
-          } hover:bg-opacity-80 transition-colors`}
+          } hover:bg-opacity-80 transition-colors active:bg-opacity-70 ${
+            loading ? 'opacity-50 cursor-wait' : ''
+          }`}
+          disabled={loading}
         >
           <svg 
             xmlns="http://www.w3.org/2000/svg" 
-            viewBox="0 0 24 24" 
-            fill="currentColor" 
-            className="w-5 h-5"
+            className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           >
-            <path fillRule="evenodd" d="M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 00-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 002.682 2.282 16.975 16.975 0 001.145.742zM12 13.5a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
+            {loading ? (
+              <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/>
+            ) : (
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z M12 7a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3z"/>
+            )}
           </svg>
-          Show my location
+          {loading ? 'Getting location...' : 'Show my location'}
         </button>
       </div>
       <div ref={mapContainer} style={{ width: '100%', height: '70vh', borderRadius: '0.5rem' }} />
