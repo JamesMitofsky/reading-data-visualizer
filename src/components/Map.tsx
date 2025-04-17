@@ -120,6 +120,13 @@ const createCustomMarkerElement = (place: Place, mapInstance: mapboxgl.Map) => {
       popup.addTo(mapInstance);
       isPopupVisible = true;
     }
+
+    // Fly to marker location with animation
+    mapInstance.flyTo({
+      center: [place.lng, place.lat],
+      zoom: 15,
+      essential: true
+    });
   });
 
   return { element: markerElement, popup };
