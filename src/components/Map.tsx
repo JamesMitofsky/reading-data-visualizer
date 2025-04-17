@@ -35,7 +35,7 @@ const getIconForType = (type: string) => {
 
   if (types.includes('working space')) {
     return `<svg fill="#4A90E2" width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-      <path d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z"/>
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4A90E2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-briefcase-business-icon lucide-briefcase-business"><path d="M12 12h.01"/><path d="M16 6V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><path d="M22 13a18.15 18.15 0 0 1-20 0"/><rect width="20" height="14" x="2" y="6" rx="2"/></svg>
     </svg>`;
   }
 
@@ -51,6 +51,15 @@ const getIconForType = (type: string) => {
     </svg>`;
   }
 
+  if (types.includes('museum')) {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-0.5 -0.5 16 16" height="16" width="16"><path d="M12.275 0.95H2.725a1.7937500000000002 1.7937500000000002 0 1 0 1.68125 2.3874999999999997H10.625a1.7874999999999999 1.7874999999999999 0 1 0 1.68125 -2.3874999999999997Z" fill="none" stroke="#800080" stroke-miterlimit="10" stroke-width="1"></path><path d="m10.5875 3.3375 -6.175000000000001 0" fill="none" stroke="#800080" stroke-miterlimit="10" stroke-width="1"></path><path d="m11.08125 14.675 0 -10.60625" fill="none" stroke="#800080" stroke-miterlimit="10" stroke-width="1"></path><path d="m3.9187499999999997 14.675 0 -10.60625" fill="none" stroke="#800080" stroke-miterlimit="10" stroke-width="1"></path><path d="m6.30625 5.725 0 8.95" fill="none" stroke="#800080" stroke-miterlimit="10" stroke-width="1"></path><path d="m8.69375 5.725 0 8.95" fill="none" stroke="#800080" stroke-miterlimit="10" stroke-width="1"></path></svg>`;
+  }
+
+  if (types.includes('accommodation')) {
+    return `<svg fill="#795548" width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M19 9.3V4h-3v2.6L12 3 2 12h3v8h14v-8h3l-3-2.7z"/>
+    </svg>`;
+  }
 
   if (types.includes('view')) {
     return `<svg fill="#FFB74D" width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -124,7 +133,7 @@ const createCustomMarkerElement = (place: Place, mapInstance: mapboxgl.Map) => {
     // Fly to marker location with animation
     mapInstance.flyTo({
       center: [place.lng, place.lat],
-      zoom: 15,
+      zoom: 14,
       essential: true
     });
   });
