@@ -251,7 +251,7 @@ const Map = ({ places, onMapReady }: MapProps) => {
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/streets-v12',
       center: [-35, 45], // Position over North Atlantic to show Vermont and Europe
-      zoom: 3.5 // Zoomed out to show both continents
+      zoom: 2.5 // Zoomed out to show both continents
     });
 
     // Hide POI labels and symbols after map loads
