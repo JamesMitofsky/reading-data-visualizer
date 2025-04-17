@@ -68,6 +68,12 @@ const getIconForType = (type: string) => {
     return `<?xml version="1.0" encoding="UTF-8"?><svg width="24px" height="24px" viewBox="0 0 24 24" stroke-width="1" fill="none" xmlns="http://www.w3.org/2000/svg" color="#000000"><path d="M17 11.6V15C17 18.3137 14.3137 21 11 21H9C5.68629 21 3 18.3137 3 15V11.6C3 11.2686 3.26863 11 3.6 11H16.4C16.7314 11 17 11.2686 17 11.6Z" stroke="#FF9999" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"></path><path d="M12 9C12 8 12.7143 7 14.1429 7V7C15.7208 7 17 5.72081 17 4.14286V3.5" stroke="#FF9999" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"></path><path d="M8 9V8.5C8 6.84315 9.34315 5.5 11 5.5V5.5C12.1046 5.5 13 4.60457 13 3.5V3" stroke="#FF9999" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"></path><path d="M16 11H18.5C19.8807 11 21 12.1193 21 13.5C21 14.8807 19.8807 16 18.5 16H17" stroke="#FF9999" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"></path></svg>`;
   }
 
+  if (types.includes('activities')) {
+    return `<svg fill="#FF725C" width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+    </svg>`;
+  }
+
   // Default to generic point of interest icon if none of the above match
   return `<?xml version="1.0" encoding="UTF-8"?><svg width="24px" height="24px" viewBox="0 0 24 24" stroke-width="1" fill="none" xmlns="http://www.w3.org/2000/svg" color="#000000"><path d="M17 11.6V15C17 18.3137 14.3137 21 11 21H9C5.68629 21 3 18.3137 3 15V11.6C3 11.2686 3.26863 11 3.6 11H16.4C16.7314 11 17 11.2686 17 11.6Z" stroke="#FF9999" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"></path><path d="M12 9C12 8 12.7143 7 14.1429 7V7C15.7208 7 17 5.72081 17 4.14286V3.5" stroke="#FF9999" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"></path><path d="M8 9V8.5C8 6.84315 9.34315 5.5 11 5.5V5.5C12.1046 5.5 13 4.60457 13 3.5V3" stroke="#FF9999" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"></path><path d="M16 11H18.5C19.8807 11 21 12.1193 21 13.5C21 14.8807 19.8807 16 18.5 16H17" stroke="#FF9999" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"></path></svg>`;
 };
@@ -104,13 +110,16 @@ const createCustomMarkerElement = (place: Place, mapInstance: mapboxgl.Map) => {
     </div>
   `);
 
-  // Show popup on hover
-  markerElement.addEventListener('mouseenter', () => {
-    popup.addTo(mapInstance);
-  });
-
-  markerElement.addEventListener('mouseleave', () => {
-    popup.remove();
+  // Show/hide popup on click
+  let isPopupVisible = false;
+  markerElement.addEventListener('click', () => {
+    if (isPopupVisible) {
+      popup.remove();
+      isPopupVisible = false;
+    } else {
+      popup.addTo(mapInstance);
+      isPopupVisible = true;
+    }
   });
 
   return { element: markerElement, popup };
