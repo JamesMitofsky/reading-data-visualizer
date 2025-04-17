@@ -225,8 +225,8 @@ const Map = ({ places, onMapReady }: MapProps) => {
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/streets-v12',
-      center: [places[0]?.lng || -0.37, places[0]?.lat || 49.18],
-      zoom: places[0] ? 14 : 2
+      center: [-35, 45], // Position over North Atlantic to show Vermont and Europe
+      zoom: 3.5 // Zoomed out to show both continents
     });
 
     // Hide POI labels and symbols after map loads
